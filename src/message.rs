@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, str::FromStr};
+use crate::error::ChatError;
 
 #[derive(Debug,Clone)]
 pub struct TextMessage {
@@ -14,7 +15,7 @@ pub enum Message {
 }
 
 impl FromStr for Message {
-    type Err = anyhow::Error;
+    type Err = ChatError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some((id, data)) = s.split_once(':') {
             let id: usize = id.parse()?;
@@ -22,26 +23,24 @@ impl FromStr for Message {
                 1 => Ok(Message::Text(TextMessage::from_str(data)?)),
                 2 => Ok(Message::ChangeName(data.to_owned())),
                 3 => Ok(Message::ChangeRoom(data.to_owned())),
-                _ => Err(anyhow::anyhow!("Wrong message format id {id} dont exist")),
+                id => Err(ChatError::WrongIdError(id)),
             }
         } else {
-            Err(anyhow::anyhow!("Wrong message format command id not found"))
+            Err(ChatError::DecodeMessageError)
         }
     }
 }
 
 impl FromStr for TextMessage {
-    type Err = anyhow::Error;
+    type Err = ChatError;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         if let Some((user, content)) = s.split_once(':') {
             Ok(TextMessage {
-                user: user.parse()?,
+                user: user.to_owned(),
                 content: content.to_owned(),
             })
         } else {
-            Err(anyhow::anyhow!(
-                "Message could not be parsed - wrong format"
-            ))
+            Err(ChatError::DecodeMessageError)
         }
     }
 }
