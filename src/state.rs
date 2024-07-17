@@ -23,13 +23,6 @@ impl State {
             inner: Arc::new(RwLock::new(inner)),
         }
     }
-
-	pub async fn create_room(&mut self ,name:&str) {
-		let mut inner = self.inner.write().await;
-		if inner.rooms.get(name).is_none() {
-			inner.rooms.insert(name.to_owned(), Room::new());
-		}
-	}
 	pub async fn subscribe_room(&mut self, name:&str) -> Result<Room> {
 		let mut inner = self.inner.write().await;
 		if let Some(room) = inner.rooms.get(name) {

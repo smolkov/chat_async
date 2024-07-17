@@ -56,7 +56,6 @@ async fn process(mut session: Session) -> Result<()> {
                     Message::Text(msg)  => {session.room.sender.send(Message::Text(msg))?;},
                     Message::ChangeName(_name) => { println!("Change name")},
                     Message::ChangeRoom(room) => {
-                        println!("change room {room}");
                         session.room = session.state.subscribe_room(&room).await?;
                         rx = session.room.receiver.resubscribe();
                     }
@@ -81,7 +80,6 @@ async fn server() -> Result<()> {
     let mut users: usize = 1;
     loop {
         if let Ok((socket, addr)) = listener.accept().await {
-            println!("Connect new user {}", addr);
             let session = Session {
                 stream: socket,
                 room: state.subscribe_room("default").await?,
